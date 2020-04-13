@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import mysql from 'mysql';
 
@@ -61,6 +62,8 @@ function createArrayFromDictionaryWithKey(dictionary: Dictionary[], ...keys: str
     });
 }
 
+app.use(express.static(path.join(__dirname, '../build')));
+
 app.get('/json', (_req: express.Request, res: express.Response) => {
     db.query('SELECT DISTINCT `college` FROM `subject_info`;', (err: mysql.MysqlError | null, results: Dictionary[]) => {
         internalServerError(res, err);
@@ -113,6 +116,8 @@ app.get('/:college/:department/:course/json', (req: express.Request, res: expres
         }
     });
 });
+
+app.get('/*', (_req: express.Request, res: express.Response) => res.sendFile(path.join(__dirname, '../build', 'index.html')));
 
 db.connect((err) => {
     if(err) throw err;
