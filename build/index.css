@@ -1,0 +1,16 @@
+#root > div {
+    height: 100vh;
+}
+
+.flexColumn {
+    flex-direction: column;
+}
+
+.fullHeight {
+    height: 100%;
+}
+
+.centerParent {
+    position: relative;
+    height: 100%;
+}

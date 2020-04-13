@@ -1,0 +1,9 @@
+{
+  "short_name": "Web Syllabus",
+  "name": "Web Syllabus",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#01A299",
+  "background_color": "#ffffff"
+}
