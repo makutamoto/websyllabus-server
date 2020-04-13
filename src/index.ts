@@ -10,12 +10,7 @@ if(process.env.WSS_DB_DATABASE === undefined) throw new Error("WSS_DB_DATABASE n
 const PORT = Number(process.env.WSS_PORT) || 80;
 
 const app = express();
-const db = mysql.createConnection({
-    host: process.env.WSS_DB_HOST,
-    user: process.env.WSS_DB_USER,
-    password: process.env.WSS_DB_PASSWORD,
-    database: process.env.WSS_DB_DATABASE,
-});
+let db: mysql.Connection;
 
 const quick_validate = /[;\-'`"]+/;
 
@@ -119,16 +114,38 @@ app.get('/:college/:department/:course/json', (req: express.Request, res: expres
 
 app.get('/*', (_req: express.Request, res: express.Response) => res.sendFile(path.join(__dirname, '../build', 'index.html')));
 
-db.connect((err) => {
-    if(err) throw err;
-    
-    process.on('SIGINT', () => {
-        console.log("Quitting...");
+function connect(callback?: () => void) {
+    db = mysql.createConnection({
+        host: process.env.WSS_DB_HOST,
+        user: process.env.WSS_DB_USER,
+        password: process.env.WSS_DB_PASSWORD,
+        database: process.env.WSS_DB_DATABASE,
+        charset: 'utf8mb4',
+    });
+    db.connect((err) => {
+        if(err) throw err;
+        if(callback) callback();
+    })
+    db.on('error', (err) => {
+        if(err.code == 'PROTOCOL_CONNECTION_LOST') {
+            console.log("Database connection has been refused.");
+            console.log("Reconecting...");
+            connect();
+        } else {
+            throw err;
+        }
+    })
+}
+
+process.on('SIGINT', () => {
+    console.log("Quitting...");
+    if(db !== undefined) {
         db.end((err) => {
             if(err) throw err;
             process.exit();
         });
-    });
-    
-    app.listen(PORT, () => console.log(`Web Syllabus Server listening on port ${PORT}.`));
+    }
 });
+
+console.log("Waiting for database to start... (10 sec.)");
+setTimeout(() => connect(() => app.listen(PORT, () => console.log(`Web Syllabus Server listening on port ${PORT}.`))), 10000);
