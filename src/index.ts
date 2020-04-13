@@ -125,7 +125,7 @@ function connect(callback?: () => void) {
     db.connect((err) => {
         if(err) throw err;
         if(callback) callback();
-    })
+    });
     db.on('error', (err) => {
         if(err.code == 'PROTOCOL_CONNECTION_LOST') {
             console.log("Database connection has been refused.");
@@ -134,7 +134,7 @@ function connect(callback?: () => void) {
         } else {
             throw err;
         }
-    })
+    });
 }
 
 process.on('SIGINT', () => {
